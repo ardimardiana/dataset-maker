@@ -59,6 +59,27 @@ $stmt = $pdo->query("
     ORDER BY d.created_at DESC
 ");
 $datasets = $stmt->fetchAll();
+
+// --- QUERY REKAP SUBMIT MAHASISWA ---
+$stmtSubmit = $pdo->query("
+    SELECT npm, nama, COUNT(id) as total_file, SUM(durasi) as total_durasi 
+    FROM datasets 
+    GROUP BY npm, nama 
+    ORDER BY total_file DESC
+");
+$rekapSubmit = $stmtSubmit->fetchAll();
+
+// --- QUERY REKAP AUDIT MAHASISWA ---
+// Asumsi: tabel reviews memiliki kolom 'reviewer_nama' dan 'reviewer_npm'. Sesuaikan jika berbeda.
+$stmtAudit = $pdo->query("
+    SELECT r.npm as npm, r.nama as nama, COUNT(r.id) as total_audit ,SUM(d.durasi) as total_durasi
+    FROM reviews r
+    LEFT JOIN datasets d ON d.id = r.id_dataset
+    GROUP BY r.npm, r.nama 
+    ORDER BY total_audit DESC
+");
+$rekapAudit = $stmtAudit->fetchAll();
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -85,10 +106,14 @@ $datasets = $stmt->fetchAll();
             
             <!-- HEADER & FILTER AREA -->
             <div class="row align-items-center mb-4">
-                <div class="col-md-4">
+                <div class="col-md-5">
                     <h4 class="mb-0 fw-bold">Master Data Audit</h4>
+                    <div class="mt-2">
+                        <button class="btn btn-sm btn-outline-primary fw-bold" data-bs-toggle="modal" data-bs-target="#modalRekapSubmit">📊 Rekap Submit</button>
+                        <button class="btn btn-sm btn-outline-success fw-bold" data-bs-toggle="modal" data-bs-target="#modalRekapAudit">📋 Rekap Audit</button>
+                    </div>
                 </div>
-                <div class="col-md-8">
+                <div class="col-md-7">
                     <div class="d-flex gap-2 justify-content-md-end mt-3 mt-md-0">
                         <!-- Kotak Pencarian -->
                         <div class="input-group" style="max-width: 300px;">
@@ -158,6 +183,7 @@ $datasets = $stmt->fetchAll();
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm w-100">
+                                        <button onclick="playDataset('<?= $row['kode_file'] ?>')" class="btn btn-warning text-dark fw-bold" title="Playback Audio">🎧 Play</button>
                                         <button onclick="lihatReview(<?= $row['id'] ?>)" class="btn btn-info text-white fw-bold" title="Lihat Catatan Reviewer">👁️ Cek</button>
                                         
                                         <?php if ($row['status'] !== 'approved'): ?>
@@ -198,6 +224,101 @@ $datasets = $stmt->fetchAll();
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="modalRekapSubmit" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold">Rekap Submit per Mahasiswa</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered text-center align-middle">
+                    <thead class="table-light">
+                        <tr><th>NPM</th><th>Nama Mahasiswa</th><th>Total File</th><th>Total Durasi</th></tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach($rekapSubmit as $rs): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($rs['npm']) ?></td>
+                            <td class="text-start"><?= htmlspecialchars($rs['nama']) ?></td>
+                            <td class="fw-bold text-primary"><?= $rs['total_file'] ?> File</td>
+                            <td><?= number_format(($rs['total_durasi']/60), 2) ?> Menit</td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalRekapAudit" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title fw-bold">Rekap Audit per Mahasiswa</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered text-center align-middle">
+                    <thead class="table-light">
+                        <tr><th>NPM Auditor</th><th>Nama Auditor</th><th>Total Dataset Diaudit</th><th>Total Durasi</th></tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach($rekapAudit as $ra): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($ra['npm'] ?? '-') ?></td>
+                            <td class="text-start"><?= htmlspecialchars($ra['nama'] ?? '-') ?></td>
+                            <td class="fw-bold text-success"><?= $ra['total_audit'] ?> Audit</td>
+                            <td><?= number_format(($ra['total_durasi']/60), 2) ?> Menit</td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="playbackModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title fw-bold text-dark">Playback Dataset</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center p-4">
+                <h6 id="playbackTitle" class="fw-bold mb-3 text-primary"></h6>
+                <audio id="audioPlayer" controls class="w-100 shadow-sm rounded">
+                    <source id="audioSource" src="" type="audio/wav">
+                    Browser Anda tidak mendukung pemutar audio.
+                </audio>
+                <a id="btnLihatRTTM" href="#" target="_blank" class="btn btn-outline-dark mt-4 w-100 fw-bold">📄 Buka File RTTM</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Logic Playback
+const playbackModalUI = new bootstrap.Modal(document.getElementById('playbackModal'));
+function playDataset(kodeFile) {
+    document.getElementById('playbackTitle').innerText = "File Kode: " + kodeFile;
+    
+    // PERHATIAN: Sesuaikan path 'uploads/wav/' dan 'uploads/rttm/' dengan letak penyimpanan file aslinya
+    document.getElementById('audioSource').src = 'uploads/wav/' + kodeFile + '.wav';
+    document.getElementById('btnLihatRTTM').href = 'uploads/rttm/' + kodeFile + '.rttm';
+    
+    document.getElementById('audioPlayer').load();
+    playbackModalUI.show();
+}
+
+// Otomatis pause audio jika modal ditutup
+document.getElementById('playbackModal').addEventListener('hidden.bs.modal', function () {
+    document.getElementById('audioPlayer').pause();
+});
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>

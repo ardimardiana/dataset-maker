@@ -25,7 +25,7 @@
     <div class="row g-4">
         <!-- Manual Guide -->
         <div class="col-lg-8">
-            <div class="card shadow-sm border-0 h-100">
+            <div class="card shadow-sm border-0">
                 <div class="card-header bg-dark text-white fw-bold">
                     Manual Guide
                 </div>
@@ -51,11 +51,23 @@
                     </div>
                 </div>
             </div>
+            <div class="card shadow-sm border-0 mt-4 border-top border-5 border-success">
+                <div class="card-header bg-white fw-bold">
+                    🔍 Cek Status Dataset (Mahasiswa)
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-2">Masukkan Kode Klaim / Kode File untuk mengetahui status dataset yang telah disubmit.</p>
+                    <form action="cek_status.php" method="GET" class="d-flex gap-2">
+                        <input type="text" name="kode_klaim" class="form-control" placeholder="Contoh: DS_12345..." required>
+                        <button type="submit" class="btn btn-success fw-bold px-4">Cari</button>
+                    </form>
+                </div>
+            </div>
         </div>
 
         <!-- Menu Navigasi -->
         <div class="col-lg-4">
-            <div class="card shadow-sm border-0 h-100">
+            <div class="card shadow-sm border-0">
                 <div class="card-header bg-primary text-white fw-bold">
                     Navigasi Tahap
                 </div>
@@ -96,7 +108,7 @@
                         </div>
                     </a>
                     <!--<a href="tools.php" class="list-group-item list-group-item-action d-flex align-items-center py-3 ">
-                        <span class="rounded-pill me-3">🧰</span>
+                        <span class="rounded-pill me-3">ðŸ§°</span>
                         <div>
                             <h6 class="mb-0 fw-bold">Tools</h6>
                             <small class="text-muted">Konversi Format Standar</small>

@@ -8,3 +8,4 @@ cgi-bin/
 
 *.ini
 *.json
+error_log
