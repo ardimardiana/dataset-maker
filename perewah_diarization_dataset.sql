@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: May 11, 2026 at 01:00 PM
+-- Generation Time: May 11, 2026 at 09:11 PM
 -- Server version: 8.0.46
 -- PHP Version: 8.4.20
 
@@ -72,6 +72,8 @@ CREATE TABLE `reviews` (
   `nama` varchar(100) NOT NULL,
   `status_review` enum('pass','fail') NOT NULL,
   `catatan` text,
+  `durasi_dataset` float DEFAULT NULL,
+  `status_aktif` int NOT NULL DEFAULT '1',
   `waktu_review` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 

@@ -75,6 +75,18 @@
                     </form>
                 </div>
             </div>
+            <div class="card shadow-sm border-0 my-4 border-top border-5 border-success">
+                <div class="card-header bg-white fw-bold">
+                    🔍 Cek Progress
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-2">Masukkan NPM untuk mengetahui progress dataset dan review yang telah disubmit.</p>
+                    <form action="cek_mahasiswa.php" method="GET" class="d-flex gap-2">
+                        <input type="text" name="npm" class="form-control" placeholder="Contoh: 08.14.1.0009" required>
+                        <button type="submit" class="btn btn-success fw-bold px-4">Cari</button>
+                    </form>
+                </div>
+            </div>
         </div>
 
         <!-- Menu Navigasi -->
@@ -119,13 +131,6 @@
                             <small class="text-muted">Spot-Check/ Audit Silang</small>
                         </div>
                     </a>
-                    <!--<a href="tools.php" class="list-group-item list-group-item-action d-flex align-items-center py-3 ">
-                        <span class="rounded-pill me-3">ðŸ§°</span>
-                        <div>
-                            <h6 class="mb-0 fw-bold">Tools</h6>
-                            <small class="text-muted">Konversi Format Standar</small>
-                        </div>
-                    </a>-->
                 </div>
             </div>
         </div>

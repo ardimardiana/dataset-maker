@@ -26,7 +26,7 @@ if ($status_review === 'fail' && empty($catatan)) {
 
 try {
     // 1. Ambil data uploader asli
-    $stmt = $pdo->prepare("SELECT npm, status FROM datasets WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT npm, status, durasi FROM datasets WHERE id = ?");
     $stmt->execute([$id_dataset]);
     $dataset = $stmt->fetch();
 
@@ -46,9 +46,9 @@ try {
         throw new Exception("Anda sudah pernah memberikan rekomendasi untuk dataset ini.");
     }
 
-    // Lolos validasi, masukkan ke tabel reviews
-    $insert = $pdo->prepare("INSERT INTO reviews (id_dataset, npm, nama, status_review, catatan) VALUES (?, ?, ?, ?, ?)");
-    $insert->execute([$id_dataset, $npm_reviewer, $nama_reviewer, $status_review, $catatan]);
+    // Lolos validasi, masukkan ke tabel reviews beserta durasi datasetnya
+    $insert = $pdo->prepare("INSERT INTO reviews (id_dataset, npm, nama, status_review, catatan, durasi_dataset) VALUES (?, ?, ?, ?, ?, ?)");
+    $insert->execute([$id_dataset, $npm_reviewer, $nama_reviewer, $status_review, $catatan, $dataset['durasi']]);
 
     echo json_encode(['status' => 'success']);
 

@@ -3,7 +3,7 @@
 require_once 'config.php';
 
 $id = $_GET['id'] ?? 0;
-$stmt = $pdo->prepare("SELECT id, kode_file, file_wav_path, file_rttm_path FROM datasets WHERE id = ? AND status = 'pending_review'");
+$stmt = $pdo->prepare("SELECT id, url, kode_file, file_wav_path, file_rttm_path FROM datasets WHERE id = ? AND status = 'pending_review'"); 
 $stmt->execute([$id]);
 $dataset = $stmt->fetch();
 
@@ -54,13 +54,15 @@ if (!$dataset) {
 <div class="container mb-5">
     <div class="row g-4">
         <!-- Panel Kiri: Player Read-Only -->
-        <div class="col-lg-8">
+        <div class="col-lg-12">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
-                    <div class="alert alert-warning border-0 border-start border-4 border-warning mb-4">
-                        <strong>Instruksi Audit:</strong> Dengarkan 3 titik acak (awal, tengah, akhir) menggunakan gelombang suara di bawah ini. Pastikan batas pemotongan akurat dan tidak ada kesalahan nama <em>speaker</em>[cite: 1].
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">URL Video</label>
+                        <div class="form-text"><a href="<?=$dataset['url']?>" target="_blank">Lihat</a></div>
                     </div>
-
+                    
                     <div class="track-header">Visualisasi Speaker (RTTM)</div>
                     <div class="viz-container mb-4" id="track-original">
                         <div class="text-center text-muted" id="loading-text">Memuat data...</div>
@@ -74,7 +76,7 @@ if (!$dataset) {
         </div>
 
         <!-- Panel Kanan: Form Keputusan -->
-        <div class="col-lg-4">
+        <div class="col-lg-12">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header bg-primary text-white fw-bold">Form Rekomendasi Audit</div>
                 <div class="card-body">

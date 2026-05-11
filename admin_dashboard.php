@@ -72,9 +72,8 @@ $rekapSubmit = $stmtSubmit->fetchAll();
 // --- QUERY REKAP AUDIT MAHASISWA ---
 // Asumsi: tabel reviews memiliki kolom 'reviewer_nama' dan 'reviewer_npm'. Sesuaikan jika berbeda.
 $stmtAudit = $pdo->query("
-    SELECT r.npm as npm, r.nama as nama, COUNT(r.id) as total_audit ,SUM(d.durasi) as total_durasi
+    SELECT r.npm as npm, r.nama as nama, COUNT(r.id) as total_audit ,SUM(r.durasi_dataset) as total_durasi
     FROM reviews r
-    LEFT JOIN datasets d ON d.id = r.id_dataset
     GROUP BY r.npm, r.nama 
     ORDER BY total_audit DESC
 ");

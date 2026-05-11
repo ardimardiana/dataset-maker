@@ -93,7 +93,10 @@ try {
             
             // 3. Kosongkan Metadata dan Reviews terkait dataset ini
             $pdo->prepare("DELETE FROM metadata WHERE id_dataset = ?")->execute([$id]);
-            $pdo->prepare("DELETE FROM reviews WHERE id_dataset = ?")->execute([$id]);
+            
+            //membiarkan mahasiswa mendapatkan Hak durasi
+            $pdo->prepare("UPDATE reviews SET status_aktif=2 WHERE id_dataset = ?")->execute([$id]);
+            //$pdo->prepare("DELETE FROM reviews WHERE id_dataset = ?")->execute([$id]);
 
             // 4. Update status datasets menjadi rejected, simpan catatan, dan null-kan path file
             $update = $pdo->prepare("UPDATE datasets SET status = 'rejected', catatan_reject = ?, kode_file = NULL, npm = NULL, nama = NULL, durasi = NULL, jumlah_speaker = NULL, file_wav_path = NULL, file_rttm_path = NULL WHERE id = ?");
