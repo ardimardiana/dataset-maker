@@ -1,0 +1,10 @@
+# Mengabaikan file konfigurasi sensitif
+config.php
+
+# Mengabaikan seluruh folder uploads (beserta isinya)
+uploads/AUDIO/
+uploads/ANOTATION/
+cgi-bin/
+
+*.ini
+*.json
