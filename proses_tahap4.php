@@ -144,10 +144,12 @@ try {
     if (!$dataset) {
         throw new Exception("Kode Klaim tidak ditemukan di database.");
     }
-    if ($dataset['status'] !== 'claimed') {
+    
+    $allowed_statuses = ['claimed', 'rejected'];
+    if (!in_array($dataset['status'], $allowed_statuses)) {
         throw new Exception("Kode Klaim ini sudah pernah digunakan untuk submit data.");
     }
-
+    
     // 2. Generate Kode File (Contoh: POD_001, TLK_002)
     $id_dataset = $dataset['id'];
     $kategori = $dataset['kategori'];
