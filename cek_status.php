@@ -57,6 +57,8 @@ if ($kode_klaim !== '') {
                                 <span class="badge bg-success">✅ Approved</span>
                             <?php elseif ($dataset['status'] === 'claimed'): ?>
                                 <span class="badge bg-secondary">🔒 Baru Diklaim (Belum Submit)</span>
+                            <?php elseif ($dataset['status'] === 'rejected'): ?>
+                                <span class="badge bg-danger">❌ Ditolak / Perlu Revisi</span>
                             <?php else: ?>
                                 <span class="badge bg-warning text-dark">⏳ Pending / Direview</span>
                             <?php endif; ?>
@@ -65,6 +67,19 @@ if ($kode_klaim !== '') {
                     <tr><th class="text-muted">Kategori</th><td>: <span class="text-capitalize"><?= str_replace('_', ' ', htmlspecialchars($dataset['kategori'])) ?></span></td></tr>
                 </table>
 
+                <?php if ($dataset['status'] === 'rejected' && !empty($dataset['catatan_reject'])): ?>
+                    <div class="alert alert-danger mt-3">
+                        <strong>Catatan Admin/Revisi:</strong><br>
+                        <?= nl2br(htmlspecialchars($dataset['catatan_reject'])) ?>
+                        
+                        <div class="mt-3">
+                            <a href="tahap4.php" class="btn btn-primary btn-sm">
+                                📤 Upload Ulang Data Sekarang
+                            </a>
+                        </div>
+                    </div>
+                <?php endif; ?>
+                        
                 <hr>
                 <h6 class="fw-bold mb-3">Riwayat Audit / Review:</h6>
                 <?php if (count($reviews) > 0): ?>

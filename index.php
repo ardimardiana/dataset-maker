@@ -53,12 +53,24 @@
             </div>
             <div class="card shadow-sm border-0 mt-4 border-top border-5 border-success">
                 <div class="card-header bg-white fw-bold">
-                    🔍 Cek Status Dataset (Mahasiswa)
+                    🔍 Cek Status Dataset
                 </div>
                 <div class="card-body">
-                    <p class="text-muted small mb-2">Masukkan Kode Klaim / Kode File untuk mengetahui status dataset yang telah disubmit.</p>
+                    <p class="text-muted small mb-2">Masukkan Kode Klaim untuk mengetahui status dataset yang telah disubmit.</p>
                     <form action="cek_status.php" method="GET" class="d-flex gap-2">
-                        <input type="text" name="kode_klaim" class="form-control" placeholder="Contoh: DS_12345..." required>
+                        <input type="text" name="kode_klaim" class="form-control" placeholder="Contoh: DS12345..." required>
+                        <button type="submit" class="btn btn-success fw-bold px-4">Cari</button>
+                    </form>
+                </div>
+            </div>
+            <div class="card shadow-sm border-0 mt-4 border-top border-5 border-success">
+                <div class="card-header bg-white fw-bold">
+                    🔍 Cek Metadata
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-2">Masukkan Youtube URL untuk mengetahui status dataset yang telah disubmit.</p>
+                    <form action="cek_metadata.php" method="GET" class="d-flex gap-2">
+                        <input type="text" name="youtube_id" class="form-control" placeholder="Contoh: https://youtube.com/..." required>
                         <button type="submit" class="btn btn-success fw-bold px-4">Cari</button>
                     </form>
                 </div>

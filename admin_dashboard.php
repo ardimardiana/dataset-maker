@@ -54,7 +54,7 @@ $stmt = $pdo->query("
            COUNT(r.id) as total_review
     FROM datasets d
     LEFT JOIN reviews r ON d.id = r.id_dataset
-    WHERE d.status != 'claimed'
+    WHERE d.status NOT IN ('claimed', 'rejected')
     GROUP BY d.id
     ORDER BY d.created_at DESC
 ");
@@ -159,7 +159,7 @@ $rekapAudit = $stmtAudit->fetchAll();
                                 }
                             ?>
                             <tr id="row-<?= $row['id'] ?>" data-status="<?= $row_status ?>">
-                                <td class="fw-bold text-primary"><?= htmlspecialchars($row['kode_file']) ?></td>
+                                <td class="fw-bold text-primary"><a class="text-decoration-none" href="audit_detail.php?id=<?= htmlspecialchars($row['id']) ?>" target="_blank"><?= htmlspecialchars($row['kode_file']) ?></a></td>
                                 <td>
                                     <div class="fw-bold"><?= htmlspecialchars($row['nama']) ?></div>
                                     <small class="text-muted"><?= htmlspecialchars($row['npm']) ?></small>
@@ -183,10 +183,9 @@ $rekapAudit = $stmtAudit->fetchAll();
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm w-100">
-                                        <button onclick="playDataset('<?= $row['kode_file'] ?>')" class="btn btn-warning text-dark fw-bold" title="Playback Audio">🎧 Play</button>
-                                        <button onclick="lihatReview(<?= $row['id'] ?>)" class="btn btn-info text-white fw-bold" title="Lihat Catatan Reviewer">👁️ Cek</button>
-                                        
+                                        <!--<button onclick="playDataset('<?= $row['kode_file'] ?>')" class="btn btn-warning text-dark fw-bold" title="Playback Audio">🎧 Play</button>-->
                                         <?php if ($row['status'] !== 'approved'): ?>
+                                            <button onclick="lihatReview(<?= $row['id'] ?>)" class="btn btn-info text-white fw-bold" title="Lihat Catatan Reviewer">👁️ Cek</button>
                                             <button onclick="aksiAdmin(<?= $row['id'] ?>, 'approve')" class="btn btn-success fw-bold" title="Force Approve">✅ ACC</button>
                                         <?php endif; ?>
                                         
@@ -194,7 +193,13 @@ $rekapAudit = $stmtAudit->fetchAll();
                                             <a href="admin_action.php?action=download&id=<?= $row['id'] ?>" class="btn btn-primary fw-bold" title="Download ZIP Bundle">📦 ZIP</a>
                                         <?php endif; ?>
                                         
-                                        <button onclick="aksiAdmin(<?= $row['id'] ?>, 'delete')" class="btn btn-danger fw-bold" title="Hapus Permanen">🗑️ Del</button>
+                                        <?php if ($row['status'] !== 'approved'): // Atau sesuaikan dengan kondisi status Anda ?>
+                                            <button type="button" class="btn btn-sm btn-danger" onclick="openRejectModal(<?= $row['id'] ?>)">
+                                                ❌ Reject / Revisi
+                                            </button>
+                                        <?php endif; ?>
+                                        
+                                        <!--<button onclick="aksiAdmin(<?= $row['id'] ?>, 'delete')" class="btn btn-danger fw-bold" title="Hapus Permanen">🗑️ Del</button>-->
                                     </div>
                                 </td>
                             </tr>
@@ -223,6 +228,32 @@ $rekapAudit = $stmtAudit->fetchAll();
             </div>
         </div>
     </div>
+</div>
+
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="rejectModalLabel">Tolak Dataset</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="formReject">
+          <div class="modal-body">
+              <input type="hidden" name="action" value="reject">
+              <input type="hidden" name="id" id="reject_id_dataset">
+              
+              <div class="mb-3">
+                  <label for="catatan" class="form-label fw-bold">Catatan Penolakan / Alasan Revisi:</label>
+                  <textarea class="form-control" name="catatan" id="catatan" rows="4" required placeholder="Jelaskan bagian mana yang salah, misal: 'File RTTM tidak sinkron dengan audio' atau 'Kategori salah, seharusnya Talkshow'..." ></textarea>
+              </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-danger">Simpan & Tolak</button>
+          </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <div class="modal fade" id="modalRekapSubmit" tabindex="-1">
@@ -300,15 +331,58 @@ $rekapAudit = $stmtAudit->fetchAll();
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// Fungsi untuk membuka modal dan set ID Dataset
+function openRejectModal(id) {
+    document.getElementById('reject_id_dataset').value = id;
+    document.getElementById('catatan').value = ''; // Reset isi textarea
+    var rejectModal = new bootstrap.Modal(document.getElementById('rejectModal'));
+    rejectModal.show();
+}
+
+// Event Listener saat form submit
+document.getElementById('formReject').addEventListener('submit', function(e) {
+    e.preventDefault(); // Mencegah reload halaman bawaan form
+    
+    let formData = new FormData(this);
+    let submitBtn = this.querySelector('button[type="submit"]');
+    
+    // Ubah status tombol biar mencegah double click
+    submitBtn.innerHTML = 'Memproses...';
+    submitBtn.disabled = true;
+
+    fetch('admin_action.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.status === 'success') {
+            alert('Dataset berhasil ditolak. Mahasiswa dapat melihat catatan revisi.');
+            location.reload(); // Refresh halaman untuk melihat perubahan status
+        } else {
+            alert('Gagal: ' + (data.message || 'Terjadi kesalahan sistem.'));
+            submitBtn.innerHTML = 'Simpan & Tolak';
+            submitBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan jaringan/server.');
+        submitBtn.innerHTML = 'Simpan & Tolak';
+        submitBtn.disabled = false;
+    });
+});
+
 // Logic Playback
 const playbackModalUI = new bootstrap.Modal(document.getElementById('playbackModal'));
 function playDataset(kodeFile) {
     document.getElementById('playbackTitle').innerText = "File Kode: " + kodeFile;
     
     // PERHATIAN: Sesuaikan path 'uploads/wav/' dan 'uploads/rttm/' dengan letak penyimpanan file aslinya
-    document.getElementById('audioSource').src = 'uploads/wav/' + kodeFile + '.wav';
-    document.getElementById('btnLihatRTTM').href = 'uploads/rttm/' + kodeFile + '.rttm';
+    document.getElementById('audioSource').src = 'uploads/AUDIO/' + kodeFile + '.wav';
+    document.getElementById('btnLihatRTTM').href = 'uploads/ANOTATION/' + kodeFile + '.rttm';
     
     document.getElementById('audioPlayer').load();
     playbackModalUI.show();
@@ -318,10 +392,7 @@ function playDataset(kodeFile) {
 document.getElementById('playbackModal').addEventListener('hidden.bs.modal', function () {
     document.getElementById('audioPlayer').pause();
 });
-</script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
 // Logika Modal dan Aksi
 const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
 

@@ -67,6 +67,40 @@ try {
             
             echo json_encode(['status' => 'success']);
             exit;
+            
+        // --- TOLAK / REJECT DATASET ---
+        case 'reject':
+            $catatan = trim($_POST['catatan'] ?? '');
+            
+            if (empty($catatan)) {
+                die(json_encode(['status' => 'error', 'message' => 'Catatan penolakan wajib diisi!']));
+            }
+
+            // 1. Ambil path file fisik
+            $stmt = $pdo->prepare("SELECT file_wav_path, file_rttm_path FROM datasets WHERE id = ?");
+            $stmt->execute([$id]);
+            $files = $stmt->fetch();
+            
+            // 2. Hapus file fisik dari server jika ada
+            if ($files) {
+                if (!empty($files['file_wav_path']) && file_exists($files['file_wav_path'])) {
+                    unlink($files['file_wav_path']);
+                }
+                if (!empty($files['file_rttm_path']) && file_exists($files['file_rttm_path'])) {
+                    unlink($files['file_rttm_path']);
+                }
+            }
+            
+            // 3. Kosongkan Metadata dan Reviews terkait dataset ini
+            $pdo->prepare("DELETE FROM metadata WHERE id_dataset = ?")->execute([$id]);
+            $pdo->prepare("DELETE FROM reviews WHERE id_dataset = ?")->execute([$id]);
+
+            // 4. Update status datasets menjadi rejected, simpan catatan, dan null-kan path file
+            $update = $pdo->prepare("UPDATE datasets SET status = 'rejected', catatan_reject = ?, kode_file = NULL, npm = NULL, nama = NULL, durasi = NULL, jumlah_speaker = NULL, file_wav_path = NULL, file_rttm_path = NULL WHERE id = ?");
+            $update->execute([$catatan, $id]);
+            
+            echo json_encode(['status' => 'success']);
+            exit;
 
         // --- DOWNLOAD ZIP BUNDLE ---
         case 'download':
