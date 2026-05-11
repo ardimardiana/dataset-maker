@@ -87,6 +87,7 @@ $rekapAudit = $stmtAudit->fetchAll();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>God Mode - Diarization Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 
@@ -114,14 +115,7 @@ $rekapAudit = $stmtAudit->fetchAll();
                 </div>
                 <div class="col-md-7">
                     <div class="d-flex gap-2 justify-content-md-end mt-3 mt-md-0">
-                        <!-- Kotak Pencarian -->
-                        <div class="input-group" style="max-width: 300px;">
-                            <span class="input-group-text bg-white">🔍</span>
-                            <input type="text" id="searchInput" class="form-control" placeholder="Cari Kode, Nama, NPM...">
-                        </div>
-                        
-                        <!-- Dropdown Filter Status -->
-                        <select id="statusFilter" class="form-select" style="max-width: 200px;">
+                        <select id="statusFilter" class="form-select border-2 border-primary" style="max-width: 200px;">
                             <option value="all">Semua Status</option>
                             <option value="pending">⏳ Pending Review</option>
                             <option value="conflicted">⚠️ Konflik (Seri)</option>
@@ -331,49 +325,12 @@ $rekapAudit = $stmtAudit->fetchAll();
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
 <script>
-// Fungsi untuk membuka modal dan set ID Dataset
-function openRejectModal(id) {
-    document.getElementById('reject_id_dataset').value = id;
-    document.getElementById('catatan').value = ''; // Reset isi textarea
-    var rejectModal = new bootstrap.Modal(document.getElementById('rejectModal'));
-    rejectModal.show();
-}
-
-// Event Listener saat form submit
-document.getElementById('formReject').addEventListener('submit', function(e) {
-    e.preventDefault(); // Mencegah reload halaman bawaan form
-    
-    let formData = new FormData(this);
-    let submitBtn = this.querySelector('button[type="submit"]');
-    
-    // Ubah status tombol biar mencegah double click
-    submitBtn.innerHTML = 'Memproses...';
-    submitBtn.disabled = true;
-
-    fetch('admin_action.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if(data.status === 'success') {
-            alert('Dataset berhasil ditolak. Mahasiswa dapat melihat catatan revisi.');
-            location.reload(); // Refresh halaman untuk melihat perubahan status
-        } else {
-            alert('Gagal: ' + (data.message || 'Terjadi kesalahan sistem.'));
-            submitBtn.innerHTML = 'Simpan & Tolak';
-            submitBtn.disabled = false;
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Terjadi kesalahan jaringan/server.');
-        submitBtn.innerHTML = 'Simpan & Tolak';
-        submitBtn.disabled = false;
-    });
-});
-
 // Logic Playback
 const playbackModalUI = new bootstrap.Modal(document.getElementById('playbackModal'));
 function playDataset(kodeFile) {
@@ -391,6 +348,82 @@ function playDataset(kodeFile) {
 document.getElementById('playbackModal').addEventListener('hidden.bs.modal', function () {
     document.getElementById('audioPlayer').pause();
 });
+// --- INISIALISASI DATATABLES ---
+$(document).ready(function() {
+    var table = $('#adminTable').DataTable({
+        pageLength: 10, // Menampilkan 10 baris per halaman
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Semua"]], // Opsi jumlah baris
+        ordering: false, // Mematikan sorting bawaan karena data sudah di-sort DESC dari PHP
+        language: {
+            search: "Cari Data:",
+            lengthMenu: "Tampilkan _MENU_ baris",
+            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ dataset",
+            paginate: {
+                first: "Awal",
+                last: "Akhir",
+                next: "Maju",
+                previous: "Mundur"
+            }
+        }
+    });
+
+    // Menghubungkan Custom Status Dropdown dengan DataTables
+    $('#statusFilter').on('change', function() {
+        var status = $(this).val();
+        
+        // Kita menggunakan pencarian teks pada Kolom ke-4 (Status Review)
+        if(status === 'all') {
+            table.column(4).search('').draw();
+        } else if(status === 'approved') {
+            table.column(4).search('APPROVED').draw();
+        } else if(status === 'conflicted') {
+            table.column(4).search('KONFLIK').draw();
+        } else if(status === 'pending') {
+            table.column(4).search('Pending').draw();
+        }
+    });
+});
+
+// Fungsi untuk membuka modal dan set ID Dataset
+function openRejectModal(id) {
+    document.getElementById('reject_id_dataset').value = id;
+    document.getElementById('catatan').value = ''; 
+    var rejectModal = new bootstrap.Modal(document.getElementById('rejectModal'));
+    rejectModal.show();
+}
+
+// Event Listener saat form submit reject
+document.getElementById('formReject').addEventListener('submit', function(e) {
+    e.preventDefault(); 
+    
+    let formData = new FormData(this);
+    let submitBtn = this.querySelector('button[type="submit"]');
+    
+    submitBtn.innerHTML = 'Memproses...';
+    submitBtn.disabled = true;
+
+    fetch('admin_action.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.status === 'success') {
+            alert('Dataset berhasil ditolak. Mahasiswa dapat melihat catatan revisi.');
+            location.reload(); 
+        } else {
+            alert('Gagal: ' + (data.message || 'Terjadi kesalahan sistem.'));
+            submitBtn.innerHTML = 'Simpan & Tolak';
+            submitBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan jaringan/server.');
+        submitBtn.innerHTML = 'Simpan & Tolak';
+        submitBtn.disabled = false;
+    });
+});
 
 // Logika Modal dan Aksi
 const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
@@ -406,7 +439,7 @@ function lihatReview(idDataset) {
 }
 
 function aksiAdmin(idDataset, actionType) {
-    let pesan = actionType === 'approve' ? "Anda yakin ingin meloloskan (Approve) dataset ini secara paksa?" : "⚠️ PERINGATAN: Anda yakin ingin MENGHAPUS PERMANEN dataset beserta file WAV dan RTTM-nya?";
+    let pesan = actionType === 'approve' ? "Anda yakin ingin meloloskan (Approve) dataset ini secara paksa?" : "Yakin ingin melanjutkan?";
     
     if (confirm(pesan)) {
         const formData = new FormData();
@@ -424,35 +457,6 @@ function aksiAdmin(idDataset, actionType) {
         });
     }
 }
-
-// --- LOGIKA FILTER REAL-TIME ---
-const searchInput = document.getElementById('searchInput');
-const statusFilter = document.getElementById('statusFilter');
-const tableRows = document.querySelectorAll('#tableBody tr:not(#emptyRow)');
-
-function filterTable() {
-    const searchText = searchInput.value.toLowerCase();
-    const statusVal = statusFilter.value;
-
-    tableRows.forEach(row => {
-        const rowText = row.innerText.toLowerCase();
-        const rowStatus = row.getAttribute('data-status');
-
-        // Cek kecocokan teks dan status
-        const matchSearch = rowText.includes(searchText);
-        const matchStatus = (statusVal === 'all') || (rowStatus === statusVal);
-
-        if (matchSearch && matchStatus) {
-            row.style.display = ''; // Tampilkan
-        } else {
-            row.style.display = 'none'; // Sembunyikan
-        }
-    });
-}
-
-// Pasang event listener pada input dan dropdown
-searchInput.addEventListener('input', filterTable);
-statusFilter.addEventListener('change', filterTable);
 </script>
 </body>
 </html>
