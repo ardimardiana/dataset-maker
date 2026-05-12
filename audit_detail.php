@@ -21,11 +21,11 @@ if (!$dataset) {
 <style>
     #waveform-container { position: relative; border: 1px solid #ccc; background: #fafafa; border-radius: 4px; }
     #timeline { margin-bottom: 20px; }
-    .viz-container { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; overflow-x: hidden; }
+    .viz-container { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; overflow-x: auto; }
     
     /* Layout Track Baru */
     .channel-track { position: relative; height: 35px; border-bottom: 1px dashed #ccc; margin-bottom: 8px; width: 100%; }
-    .rttm-segment { position: absolute; height: 100%; top: 0; opacity: 0.8; border-radius: 12px; }
+    .rttm-segment { position: absolute; height: 100%; top: 0; opacity: 0.8; }
     .track-header { font-size: 16px; font-weight: bold; margin-bottom: 10px; color: #2c3e50; border-bottom: 2px solid #0d6efd; display: inline-block; }
     
     /* Garis Playhead (Cursor Berjalan) pada RTTM */
@@ -155,12 +155,25 @@ if (!$dataset) {
     wavesurfer.on('ready', () => {
         audioDuration = wavesurfer.getDuration();
         
-        // Fetch RTTM file dari server
         fetch(rttmUrl)
             .then(response => response.text())
             .then(text => {
                 const data = parseRTTM(text);
                 renderMultiChannelTrack('track-original', data);
+    
+                // --- KODE SINKRONISASI SCROLL ---
+                const wsWrapper = wavesurfer.getWrapper();
+                const rttmContainer = document.getElementById('track-original');
+                
+                // Sinkronisasi dari WaveSurfer ke RTTM
+                wsWrapper.addEventListener('scroll', () => {
+                    rttmContainer.scrollLeft = wsWrapper.scrollLeft;
+                });
+    
+                // Sinkronisasi dari RTTM ke WaveSurfer
+                rttmContainer.addEventListener('scroll', () => {
+                    wsWrapper.scrollLeft = rttmContainer.scrollLeft;
+                });
             });
     });
 
@@ -207,12 +220,23 @@ if (!$dataset) {
         labelsCol.style.width = '120px';
         labelsCol.style.paddingRight = '15px';
         labelsCol.style.flexShrink = '0';
-
+        // TAMBAHKAN 4 BARIS INI AGAR LABEL STICKY:
+        labelsCol.style.position = 'sticky';
+        labelsCol.style.left = '0';
+        labelsCol.style.backgroundColor = '#fff';
+        labelsCol.style.zIndex = '5';
+        
         // Kolom Track (Kanan)
         const tracksCol = document.createElement('div');
-        tracksCol.style.flex = '1';
-        tracksCol.style.position = 'relative'; // Wajib relatif untuk menahan playhead
-        tracksCol.style.cursor = 'pointer'; // Menandakan bahwa area ini bisa diklik
+        // HAPUS ATAU GANTI baris tracksCol.style.flex = '1'; MENJADI:
+        const wsContainer = document.getElementById('waveform-container');
+        const minPx = 50; // Harus sama dengan nilai minPxPerSec di WaveSurfer
+        const trackWidth = Math.max(wsContainer.clientWidth, audioDuration * minPx);
+        
+        tracksCol.style.width = trackWidth + 'px';
+        tracksCol.style.minWidth = trackWidth + 'px';
+        tracksCol.style.position = 'relative'; 
+        tracksCol.style.cursor = 'pointer';
 
         uniqueSpeakers.forEach(speaker => {
             // Render Label
@@ -235,12 +259,23 @@ if (!$dataset) {
             data.filter(d => d.speaker === speaker).forEach(seg => {
                 const startPct = (seg.start / audioDuration) * 100;
                 const widthPct = ((seg.end - seg.start) / audioDuration) * 100;
+            
                 const segDiv = document.createElement('div');
                 segDiv.className = 'rttm-segment';
                 segDiv.style.left = `${startPct}%`;
                 segDiv.style.width = `${widthPct}%`;
                 segDiv.style.backgroundColor = getSpeakerColor(speaker);
-                segDiv.title = `${speaker}: ${seg.start.toFixed(2)}s - ${seg.end.toFixed(2)}s`;
+                
+                // Informasi timestamp saat di-hover (diperjelas)
+                segDiv.title = `Speaker: ${speaker} | Mulai: ${seg.start.toFixed(3)}s | Selesai: ${seg.end.toFixed(3)}s`;
+                
+                // Event click khusus segmen: meloncat ke awal waktu segmen
+                segDiv.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Mencegah klik diteruskan ke kontainer tracksCol
+                    wavesurfer.setTime(seg.start); // Set pemutar tepat ke waktu awal segmen
+                    wavesurfer.play();
+                });
+                
                 trackDiv.appendChild(segDiv);
             });
             tracksCol.appendChild(trackDiv);

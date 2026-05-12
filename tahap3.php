@@ -51,7 +51,7 @@
                             <span id="icon-lapis2" class="me-2 fs-4">⏳</span>
                             <div>
                                 <h6 class="mb-0 fw-bold">Lapis 2: Nomenklatur Speaker</h6>
-                                <small class="text-muted">Format harus SPEAKER_01, SPEAKER_02, dst.</small>
+                                <small class="text-muted"><!--Format harus SPEAKER_01, SPEAKER_02, dst.--> Nice</small>
                             </div>
                         </div>
                         <ul id="log-lapis2" class="text-danger small ms-4 log-list"></ul>
@@ -195,11 +195,11 @@ document.getElementById('rttmCheckFile').addEventListener('change', function(e) 
             });
 
 
-            // --- VALIDASI LAPIS 2 (Nomenklatur) ---
+            /*// --- VALIDASI LAPIS 2 (Nomenklatur) ---
             const regexNomenklatur = /^SPEAKER_\d+$/;
             if(!regexNomenklatur.test(speaker)) {
                 errorsLapis2.push(`Baris ${baris}: Nama speaker <strong>"${speaker}"</strong> tidak valid. Wajib gunakan format SPEAKER_01, SPEAKER_02, dst.`);
-            }
+            }*/
         });
 
         // Tampilkan Hasil Lapis 1

@@ -77,10 +77,10 @@ function validateRttmFile($filepath) {
         if ($duration > $MAX_DURATION) return "RTTM Error Baris $baris: Durasi tidak wajar. Segmen kepanjangan (> {$MAX_DURATION}s).";
         
         // Cek Nomenklatur Lapis 2
-        if (!preg_match('/^SPEAKER_\d+$/', $speaker)) {
+        /*if (!preg_match('/^SPEAKER_\d+$/', $speaker)) {
             return "RTTM Error Baris $baris: Nama speaker \"$speaker\" tidak valid. Wajib gunakan format SPEAKER_01, dst.";
         }
-        
+        */
         // Cek Self-overlap
         if (!isset($speakerSegments[$speaker])) {
             $speakerSegments[$speaker] = [];

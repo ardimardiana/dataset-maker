@@ -226,10 +226,10 @@ document.getElementById('rttmInput').addEventListener('change', function(e) {
             });
             speakerSegments[speaker].push({start: start, end: end, baris: baris});
 
-            const regexNomenklatur = /^SPEAKER_\d+$/;
+            /*const regexNomenklatur = /^SPEAKER_\d+$/;
             if(!regexNomenklatur.test(speaker)) {
                 errors.push(`Baris ${baris}: Nomenklatur "${speaker}" salah. (Harus SPEAKER_XX)`);
-            }
+            }*/
 
             // Jika tidak error, simpan untuk metadata (menggabungkan fungsi tahap 4 yang asli)
             uniqueSpeakers.add(speaker);

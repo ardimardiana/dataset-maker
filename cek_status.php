@@ -91,7 +91,7 @@ if ($kode_klaim !== '') {
                                 <?php else: ?>
                                     <span class="badge bg-danger">FAIL</span>
                                 <?php endif; ?>
-                                <small class="text-muted ms-2"><?= date('d M Y H:i', $rev['waktu_review']) ?></small>
+                                <small class="text-muted ms-2"><?= $rev['waktu_review'] ?></small>
                                 <div class="mt-1 bg-light p-2 rounded small border text-muted">
                                     "<?= htmlspecialchars($rev['catatan'] ?: 'Tidak ada komentar') ?>"
                                 </div>
