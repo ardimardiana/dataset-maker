@@ -237,6 +237,13 @@ document.getElementById('rttmInput').addEventListener('change', function(e) {
                 maxEndTime = end;
             }
         });
+        
+        // --- TAMBAHAN: VALIDASI MINIMAL 3 SPEAKER ---
+        if (uniqueSpeakers.size > 0 && uniqueSpeakers.size < 3) {
+            let spkArray = Array.from(uniqueSpeakers).join(', ');
+            errors.push(`Galat Dataset: RTTM hanya memiliki ${uniqueSpeakers.size} pembicara (${spkArray}). Syarat minimal adalah 3 orang pembicara.`);
+        }
+        // --------------------------------------------
 
         // Keputusan
         if(errors.length > 0) {

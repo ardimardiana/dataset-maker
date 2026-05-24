@@ -42,9 +42,33 @@
                                 </ul>
                             </div>
                         </li>
+                        
                         <li class="list-group-item border-0 py-1"><span class="ms-2">Video <strong>tidak boleh</strong> berupa video kompilasi.</span></li>
-                        <li class="list-group-item border-0 py-1"><span class="ms-2">Minimal pembicara <strong>2 orang</strong>.</span></li>
+                        <li class="list-group-item border-0 py-1"><span class="ms-2">Minimal pembicara <strong>3 orang</strong>.</span></li>
                         <li class="list-group-item border-0 py-1"><span class="ms-2">Minimal durasi <strong>20 detik</strong>.</span></li>
+                    
+                        <li class="list-group-item d-flex justify-content-between align-items-start border-0 pb-1 mt-2">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">Ketentuan Inklusi & Eksklusi Suara</div>
+                                <ul class="mt-2 text-muted">
+                                    <li><span class="badge bg-success">Include</span> <strong>Words / Hesitations:</strong> Wajib dimasukkan (didefinisikan sebagai <em>scorable</em> atau <em>hesitation tokens</em>).</li>
+                                    <li><span class="badge bg-success">Include</span> <strong>Vocalized Laughter:</strong> Wajib dimasukkan karena signifikan untuk pola percakapan natural (sekitar 9% dari waktu).</li>
+                                    <li><span class="badge bg-danger">Exclude</span> <strong>Cough / Breath / Sneeze:</strong> Abaikan (dilabeli sebagai <em>non-lexical, non-scored tokens</em>).</li>
+                                    <li><span class="badge bg-danger">Exclude</span> <strong>Non-vocal Sounds:</strong> Abaikan (disaring oleh VAD sebagai <em>non-speech/noise</em>).</li>
+                                </ul>
+                            </div>
+                        </li>
+                    
+                        <li class="list-group-item d-flex justify-content-between align-items-start border-0 pb-1 mt-2">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">Ketentuan Segmentasi (Turn Length & Jeda)</div>
+                                <ul class="mt-2 text-muted">
+                                    <li><strong>Min. Turn Length:</strong> 200ms (sedikit di bawah standar 250ms <em>collars</em>).</li>
+                                    <li><strong>Max. Turn Length:</strong> Tidak terbatas (harus berupa segmen homogen / hanya ada satu pembicara dalam segmen tersebut).</li>
+                                    <li><strong>Pause Tolerance:</strong> 500ms (selaras dengan 0.5s <em>unscored buffer collars</em>).</li>
+                                </ul>
+                            </div>
+                        </li>
                     </ol>
                     <div class="alert alert-warning border-start border-4 border-warning mt-4">
                         <strong>Catatan Penting:</strong> Dataset yang dihasilkan diharapkan natural. Kami justru membutuhkan dataset yang <em>"chaos"</em> (mengandung <em>overlap</em>, interupsi, tumpang tindih suara) untuk melatih model AI menghadapi skenario dunia nyata.

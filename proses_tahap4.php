@@ -99,6 +99,13 @@ function validateRttmFile($filepath) {
         ];
     }
     
+    // --- TAMBAHAN: VALIDASI MINIMAL 3 SPEAKER ---
+    $uniqueSpeakersCount = count(array_keys($speakerSegments));
+    if ($uniqueSpeakersCount > 0 && $uniqueSpeakersCount < 3) {
+        return "RTTM Error: File hanya memiliki $uniqueSpeakersCount pembicara. Syarat minimal adalah 3 orang pembicara.";
+    }
+    // --------------------------------------------
+    
     return true; // Valid
 }
 // ==========================================

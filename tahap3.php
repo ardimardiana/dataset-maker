@@ -201,6 +201,13 @@ document.getElementById('rttmCheckFile').addEventListener('change', function(e) 
                 errorsLapis2.push(`Baris ${baris}: Nama speaker <strong>"${speaker}"</strong> tidak valid. Wajib gunakan format SPEAKER_01, SPEAKER_02, dst.`);
             }*/
         });
+        
+        // --- TAMBAHAN: VALIDASI MINIMAL 3 SPEAKER ---
+        const uniqueSpeakers = Object.keys(speakerSegments);
+        // Pastikan file tidak kosong (length > 0) dan jumlah speaker kurang dari 3
+        if (uniqueSpeakers.length > 0 && uniqueSpeakers.length < 3) {
+            errorsLapis1.push(`<strong>Galat Dataset:</strong> File ini hanya memiliki ${uniqueSpeakers.length} pembicara unik (${uniqueSpeakers.join(', ')}). Syarat minimal adalah 3 orang pembicara.`);
+        }
 
         // Tampilkan Hasil Lapis 1
         if(errorsLapis1.length > 0) {
