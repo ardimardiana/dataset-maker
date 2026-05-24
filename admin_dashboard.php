@@ -111,6 +111,7 @@ $rekapAudit = $stmtAudit->fetchAll();
                     <div class="mt-2">
                         <button class="btn btn-sm btn-outline-primary fw-bold" data-bs-toggle="modal" data-bs-target="#modalRekapSubmit">📊 Rekap Submit</button>
                         <button class="btn btn-sm btn-outline-success fw-bold" data-bs-toggle="modal" data-bs-target="#modalRekapAudit">📋 Rekap Audit</button>
+                        <a href="rekap_mahasiswa.php" target="_blank" class="btn btn-sm btn-outline-danger fw-bold">👥 Rekap Mahasiswa</a>
                     </div>
                 </div>
                 <div class="col-md-7">
