@@ -154,6 +154,14 @@
     document.getElementById('audio-upload').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
+            // --- TAMBAHAN: Pengecekan Spasi pada Nama File ---
+            if (file.name.includes(' ')) {
+                alert("Silahkan ubah nama file menjadi klaim kode atau jangan gunakan spasi dalam nama file audio");
+                e.target.value = ''; // Kosongkan input agar pengguna harus memilih ulang
+                return; // Hentikan proses eksekusi
+            }
+            // -------------------------------------------------
+
             fileName = file.name.split('.')[0];
             const url = URL.createObjectURL(file);
             wavesurfer.load(url);
