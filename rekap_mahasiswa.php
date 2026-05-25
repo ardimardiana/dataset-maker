@@ -28,10 +28,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty(trim($npms_input))) {
         $inQuery = implode(',', array_fill(0, count($npm_list), '?'));
         
         // 2. Query Rekap Submit (Menghitung dari tabel datasets)
-        $querySubmit = "SELECT npm, MAX(nama) as nama, COUNT(id) as total_submit 
-                        FROM datasets 
-                        WHERE npm IN ($inQuery) AND kode_file IS NOT NULL 
-                        GROUP BY npm";
+        $querySubmit = "
+                SELECT npm, nama, COUNT(id) as total_file, SUM(durasi) as total_submit_durasi
+                    FROM datasets 
+                    WHERE npm IN ($inQuery)
+                    GROUP BY npm 
+                    ORDER BY total_submit_durasi DESC
+        ";
         $stmtSubmit = $pdo->prepare($querySubmit);
         $stmtSubmit->execute($npm_list);
         $submits = $stmtSubmit->fetchAll(PDO::FETCH_ASSOC);
@@ -39,10 +42,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty(trim($npms_input))) {
         // 3. Query Rekap Audit
         // CATATAN: Silakan sesuaikan nama tabel 'audit' dan kolom 'npm' 
         // dengan skema tabel audit/cross_audit yang Anda gunakan.
-        $queryAudit = "SELECT npm AS auditor_npm, COUNT(id) as total_audit 
-                       FROM audit 
-                       WHERE npm IN ($inQuery) AND status = 'completed'
-                       GROUP BY npm";
+        $queryAudit = "
+                    SELECT r.npm as npm, r.nama as nama, COUNT(r.id) as total_audit ,SUM(r.durasi_dataset) as total_audit_durasi
+                        FROM reviews r
+                        WHERE r.npm IN ($inQuery)
+                        GROUP BY r.npm
+                        ORDER BY total_audit_durasi DESC
+        ";
         try {
             $stmtAudit = $pdo->prepare($queryAudit);
             $stmtAudit->execute($npm_list);
@@ -67,14 +73,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty(trim($npms_input))) {
         // Isi dengan data submit
         foreach ($submits as $row) {
             $results[$row['npm']]['nama'] = $row['nama'];
-            $results[$row['npm']]['total_submit'] = $row['total_submit'];
+            $results[$row['npm']]['total_file'] = $row['total_file'];
+            $results[$row['npm']]['total_submit_durasi'] = $row['total_submit_durasi'];
         }
         
         // Isi dengan data audit
         foreach ($audits as $row) {
-            $npm_auditor = $row['auditor_npm'];
+            $npm_auditor = $row['npm'];
             if(isset($results[$npm_auditor])) {
                 $results[$npm_auditor]['total_audit'] = $row['total_audit'];
+                $results[$npm_auditor]['total_audit_durasi'] = $row['total_audit_durasi'];
             }
         }
     }
@@ -148,17 +156,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty(trim($npms_input))) {
                                             <td class="fw-bold text-primary font-monospace"><?= htmlspecialchars($res['npm']) ?></td>
                                             <td class="text-start fw-semibold"><?= htmlspecialchars($res['nama']) ?></td>
                                             <td>
-                                                <?php if($res['total_submit'] > 0): ?>
-                                                    <span class="badge bg-success fs-6 px-3"><?= $res['total_submit'] ?> File</span>
+                                                <?php if($res['total_file'] > 0): ?>
+                                                    <span class="badge bg-primary fs-6 px-3"><?= $res['total_file'] ?> File</span>
+                                                    <span class="badge bg-success fs-6 px-3"><?= number_format(($res['total_submit_durasi']/60), 2) ?> Menit</span>
                                                 <?php else: ?>
                                                     <span class="badge bg-danger px-3">0 File</span>
                                                 <?php endif; ?>
                                             </td>
                                             <td>
                                                 <?php if($res['total_audit'] > 0): ?>
-                                                    <span class="badge bg-success fs-6 px-3"><?= $res['total_audit'] ?> Audit</span>
+                                                    <span class="badge bg-primary fs-6 px-3"><?= $res['total_audit'] ?> File</span>
+                                                    <span class="badge bg-success fs-6 px-3"><?= number_format(($res['total_audit_durasi']/60), 2) ?> Menit</span>
                                                 <?php else: ?>
-                                                    <span class="badge bg-danger px-3">0 Audit</span>
+                                                    <span class="badge bg-danger px-3">0 File</span>
                                                 <?php endif; ?>
                                             </td>
                                         </tr>
