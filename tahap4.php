@@ -184,7 +184,7 @@ document.getElementById('rttmInput').addEventListener('change', function(e) {
         
         let errors = [];
         const MIN_DURATION = 0.2;
-        const MAX_DURATION = 30.0;
+        const MAX_DURATION = 180.0;
         let speakerSegments = {}; 
         
         let uniqueSpeakers = new Set();

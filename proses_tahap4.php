@@ -46,7 +46,7 @@ function validateRttmFile($filepath) {
     
     $speakerSegments = [];
     $MIN_DURATION = 0.2;
-    $MAX_DURATION = 30.0;
+    $MAX_DURATION = 180.0;
     
     foreach ($lines as $index => $line) {
         $line = trim($line);

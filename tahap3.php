@@ -130,7 +130,7 @@ document.getElementById('rttmCheckFile').addEventListener('change', function(e) 
         
         // Parameter Validasi (Sama dengan script Python)
         const MIN_DURATION = 0.2;
-        const MAX_DURATION = 30.0;
+        const MAX_DURATION = 180.0;
         let speakerSegments = {}; // Menyimpan semua segmen per speaker: { speaker_id: [{start, end, baris}] }
         
         lines.forEach((line, index) => {
